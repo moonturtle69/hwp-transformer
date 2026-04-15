@@ -1,16 +1,6 @@
 # EBS 올림포스 HWP 자동 변환기
 
-## 🚀 실행 방법 (선택)
-
-### 방법 A — 로컬 실행 (Python 필요)
-1. Python 설치: https://python.org/downloads  
-   ※ 설치 시 **"Add Python to PATH"** 반드시 체크
-2. `시작.bat` 더블클릭 → 브라우저 자동 오픈
-
-### 방법 B — 온라인 배포 (무료, 링크 공유 가능)
-아래 중 하나 선택:
-
-#### Streamlit Cloud (가장 쉬움, 무료)
+#### Streamlit Cloud 
 1. https://github.com 에서 저장소 생성 후 이 폴더 파일 업로드
 2. https://share.streamlit.io 접속 → GitHub 연결 → `app_streamlit.py` 선택
 3. Deploy → URL 공유
