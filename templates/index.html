@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EBS 올림포스 HWP 자동 변환기</title>
+  <style>
+    :root {
+      --blue: #2563EB;
+      --blue-light: #EFF6FF;
+      --green: #16A34A;
+      --green-light: #F0FDF4;
+      --red: #DC2626;
+      --red-light: #FEF2F2;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-400: #9CA3AF;
+      --gray-600: #4B5563;
+      --gray-700: #374151;
+      --gray-900: #111827;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      height: 60px;
+      gap: 12px;
+    }
+    .header-logo {
+      width: 36px; height: 36px;
+      background: var(--blue);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 18px;
+    }
+    .header-title { font-size: 16px; font-weight: 700; color: var(--gray-900); }
+    .header-sub { font-size: 12px; color: var(--gray-400); margin-left: 4px; }
+
+    /* Main layout */
+    .main {
+      max-width: 860px;
+      margin: 40px auto;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Card */
+    .card {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--gray-100);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-header h2 { font-size: 15px; font-weight: 600; }
+    .card-header .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: var(--blue-light);
+      color: var(--blue);
+      font-weight: 500;
+    }
+    .card-body { padding: 24px; }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed var(--gray-200);
+      border-radius: 10px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--blue);
+      background: var(--blue-light);
+    }
+    .upload-zone input[type="file"] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .upload-icon { font-size: 40px; margin-bottom: 12px; }
+    .upload-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; color: var(--gray-700); }
+    .upload-sub { font-size: 13px; color: var(--gray-400); }
+    .upload-zone.has-file { border-style: solid; border-color: var(--blue); background: var(--blue-light); }
+    .upload-zone.has-file .upload-icon { font-size: 30px; }
+    .file-name {
+      font-size: 14px; font-weight: 600; color: var(--blue);
+      margin-top: 8px;
+    }
+
+    /* How it works */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .step {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-100);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 13px;
+      color: var(--gray-600);
+      line-height: 1.5;
+    }
+    .step strong { display: block; color: var(--gray-900); margin-bottom: 4px; font-size: 13px; }
+    .step-num {
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    /* Before/After diagram */
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+    .compare-box {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 12px;
+    }
+    .compare-box h4 {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gray-400);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .compare-arrow { font-size: 24px; color: var(--gray-400); text-align: center; }
+    .sent { margin: 3px 0; padding: 4px 8px; border-radius: 4px; }
+    .sent.en { background: #F0F9FF; color: #0369A1; font-size: 11px; }
+    .sent.ko { background: #F0FDF4; color: #166534; font-size: 11px; }
+    .sent.box {
+      background: #FEF9C3; color: #854D0E; font-size: 11px;
+      margin-top: 8px; border: 1px solid #FDE68A;
+    }
+    .sent.deleted { opacity: 0.35; text-decoration: line-through; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px;
+      padding: 11px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary {
+      background: var(--blue);
+      color: white;
+      width: 100%;
+    }
+    .btn-primary:hover:not(:disabled) { background: #1D4ED8; }
+    .btn-secondary {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+    .btn-secondary:hover:not(:disabled) { background: var(--gray-200); }
+    .btn-lg { padding: 14px 32px; font-size: 15px; }
+
+    /* Progress */
+    .progress-bar {
+      height: 4px; background: var(--gray-100); border-radius: 2px;
+      overflow: hidden; margin-top: 12px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--blue);
+      border-radius: 2px;
+      transition: width 0.3s;
+      width: 0%;
+    }
+    .progress-fill.indeterminate {
+      animation: indeterminate 1.5s infinite;
+    }
+    @keyframes indeterminate {
+      0% { width: 0; margin-left: 0; }
+      50% { width: 60%; margin-left: 20%; }
+      100% { width: 0; margin-left: 100%; }
+    }
+
+    /* Alert */
+    .alert {
+      padding: 12px 16px; border-radius: 8px;
+      font-size: 13px; line-height: 1.5;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .alert-error { background: var(--red-light); color: var(--red); }
+    .alert-success { background: var(--green-light); color: var(--green); }
+    .alert-info { background: var(--blue-light); color: var(--blue); }
+    .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Preview table */
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .preview-table th {
+      text-align: left;
+      padding: 8px 12px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+      font-size: 12px;
+      color: var(--gray-600);
+      font-weight: 600;
+    }
+    .preview-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--gray-100);
+      color: var(--gray-700);
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .tag-transform { background: #FEF3C7; color: #92400E; }
+    .tag-done { background: var(--green-light); color: var(--green); }
+
+    /* Result stats */
+    .stats { display: flex; gap: 12px; }
+    .stat-card {
+      flex: 1;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-100);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-num { font-size: 28px; font-weight: 700; color: var(--blue); }
+    .stat-label { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
+
+    /* Sections */
+    .section-title {
+      font-size: 13px; font-weight: 600; color: var(--gray-600);
+      margin-bottom: 12px;
+    }
+
+    /* Hidden */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">📄</div>
+  <span class="header-title">EBS 올림포스 HWP 자동 변환기</span>
+  <span class="header-sub">영어독해 기본 · 한글 번역 재배치</span>
+</header>
+
+<main class="main">
+
+  <!-- How it works -->
+  <div class="card">
+    <div class="card-header">
+      <h2>변환 방식</h2>
+    </div>
+    <div class="card-body">
+      <div class="compare">
+        <div class="compare-box">
+          <h4>변환 전 (원본)</h4>
+          <div class="sent en">❶ Cooked food does many...</div>
+          <div class="sent en">❷ It makes our food safer...</div>
+          <div class="sent en">❸ Heating can allow us...</div>
+          <div style="margin-top:8px; font-size:11px; color:var(--gray-400)">하단 한글 박스:</div>
+          <div class="sent box">❶ 조리된 음식은 친숙한...</div>
+          <div class="sent box">❷ 그것은 우리의 음식을...</div>
+          <div class="sent box deleted">❸ 가열은 우리가...</div>
+        </div>
+        <div class="compare-arrow">→</div>
+        <div class="compare-box">
+          <h4>변환 후 (완성)</h4>
+          <div class="sent ko">조리된 음식은 친숙한 여러 가지 일을 한다.</div>
+          <div class="sent en">❶ Cooked food does many...</div>
+          <div class="sent ko">그것은 우리의 음식을 더 안전하게...</div>
+          <div class="sent en">❷ It makes our food safer...</div>
+          <div class="sent ko">가열은 우리가 질긴 음식을...</div>
+          <div class="sent en">❸ Heating can allow us...</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <strong>번호 매칭</strong>
+            영문 ❶과 한글 ❶을 자동으로 매칭합니다.
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <strong>한글을 위에 배치</strong>
+            한글을 영문 위에 배치하고, 한글 앞 번호를 제거합니다.
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <strong>하단 박스 삭제</strong>
+            하단의 한글 번역 박스를 자동으로 삭제합니다.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload -->
+  <div class="card">
+    <div class="card-header">
+      <h2>HWP 파일 업로드</h2>
+      <span class="badge">변환 전 원본 파일</span>
+    </div>
+    <div class="card-body">
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" accept=".hwp" id="fileInput" />
+        <div class="upload-icon" id="uploadIcon">📂</div>
+        <div class="upload-title" id="uploadTitle">HWP 파일을 드래그하거나 클릭하여 선택</div>
+        <div class="upload-sub" id="uploadSub">.hwp 파일만 지원 (최대 50MB)</div>
+        <div class="file-name hidden" id="fileName"></div>
+      </div>
+
+      <div style="margin-top:16px; display:flex; gap:10px;">
+        <button class="btn btn-secondary" id="previewBtn" disabled onclick="previewFile()">
+          🔍 미리보기
+        </button>
+        <button class="btn btn-primary" id="transformBtn" disabled onclick="transformFile()">
+          ✨ 변환 시작
+        </button>
+      </div>
+
+      <div class="progress-bar hidden" id="progressBar">
+        <div class="progress-fill indeterminate" id="progressFill"></div>
+      </div>
+
+      <div id="alertArea" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <!-- Preview result -->
+  <div class="card hidden" id="previewCard">
+    <div class="card-header">
+      <h2>파일 미리보기</h2>
+    </div>
+    <div class="card-body">
+      <div id="previewContent"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const uploadZone = document.getElementById('uploadZone');
+  const previewBtn = document.getElementById('previewBtn');
+  const transformBtn = document.getElementById('transformBtn');
+  const progressBar = document.getElementById('progressBar');
+  const alertArea = document.getElementById('alertArea');
+  const previewCard = document.getElementById('previewCard');
+
+  let selectedFile = null;
+
+  // File input change
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+  });
+
+  // Drag and drop
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('drag-over');
+  });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.hwp')) handleFile(file);
+    else showAlert('HWP 파일만 업로드 가능합니다.', 'error');
+  });
+
+  function handleFile(file) {
+    selectedFile = file;
+    uploadZone.classList.add('has-file');
+    document.getElementById('uploadIcon').textContent = '📄';
+    document.getElementById('uploadTitle').textContent = '파일이 선택되었습니다';
+    document.getElementById('uploadSub').textContent = '';
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileName').classList.remove('hidden');
+    previewBtn.disabled = false;
+    transformBtn.disabled = false;
+    alertArea.innerHTML = '';
+    previewCard.classList.add('hidden');
+  }
+
+  function showAlert(msg, type='error') {
+    const icons = { error: '❌', success: '✅', info: 'ℹ️' };
+    alertArea.innerHTML = `
+      <div class="alert alert-${type}">
+        <span class="alert-icon">${icons[type]}</span>
+        <span>${msg}</span>
+      </div>`;
+  }
+
+  function setLoading(loading) {
+    previewBtn.disabled = loading;
+    transformBtn.disabled = loading;
+    if (loading) {
+      progressBar.classList.remove('hidden');
+      document.getElementById('progressFill').classList.add('indeterminate');
+    } else {
+      progressBar.classList.add('hidden');
+    }
+  }
+
+  async function previewFile() {
+    if (!selectedFile) return;
+    setLoading(true);
+    alertArea.innerHTML = '';
+    const fd = new FormData();
+    fd.append('file', selectedFile);
+    try {
+      const res = await fetch('/preview', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.error) {
+        showAlert('오류: ' + data.error, 'error');
+        return;
+      }
+      renderPreview(data);
+    } catch(e) {
+      showAlert('미리보기 중 오류가 발생했습니다: ' + e.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function renderPreview(data) {
+    const needsTransform = data.pages.filter(p => p.needs_transform).length;
+    const alreadyDone = data.pages.filter(p => !p.needs_transform).length;
+
+    let html = `
+      <div class="stats" style="margin-bottom:16px;">
+        <div class="stat-card">
+          <div class="stat-num">${data.total}</div>
+          <div class="stat-label">전체 페이지</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#92400E">${needsTransform}</div>
+          <div class="stat-label">변환 필요</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:var(--green)">${alreadyDone}</div>
+          <div class="stat-label">이미 완료</div>
+        </div>
+      </div>
+      <table class="preview-table">
+        <thead>
+          <tr>
+            <th>페이지</th>
+            <th>카테고리</th>
+            <th>문장 수</th>
+            <th>상태</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    for (const p of data.pages) {
+      html += `
+        <tr>
+          <td>${p.page}</td>
+          <td>${p.category}</td>
+          <td>${p.sentence_count}개</td>
+          <td>
+            ${p.needs_transform
+              ? '<span class="tag tag-transform">⚠️ 변환 필요</span>'
+              : '<span class="tag tag-done">✅ 이미 완료</span>'}
+          </td>
+        </tr>`;
+    }
+    html += `</tbody></table>`;
+
+    document.getElementById('previewContent').innerHTML = html;
+    previewCard.classList.remove('hidden');
+  }
+
+  async function transformFile() {
+    if (!selectedFile) return;
+    setLoading(true);
+    alertArea.innerHTML = '';
+    showAlert('변환 중입니다... 잠시만 기다려주세요.', 'info');
+
+    const fd = new FormData();
+    fd.append('file', selectedFile);
+    try {
+      const res = await fetch('/transform', { method: 'POST', body: fd });
+      if (!res.ok) {
+        const data = await res.json();
+        showAlert('변환 실패: ' + data.error, 'error');
+        return;
+      }
+      // Download
+      const blob = await res.blob();
+      const cd = res.headers.get('Content-Disposition') || '';
+      const match = cd.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+      let filename = match ? decodeURIComponent(match[1]) : '변환완료.docx';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showAlert('✅ 변환 완료! DOCX 파일이 다운로드되었습니다. 필요 시 HWP로 다시 저장하세요.', 'success');
+    } catch(e) {
+      showAlert('오류: ' + e.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+</script>
+</body>
+</html>
